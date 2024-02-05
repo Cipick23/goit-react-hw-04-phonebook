@@ -1,16 +1,57 @@
-export const App = () => {
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { nanoid } from 'nanoid';
+import ContactForm from './contactForm/ContactForm';
+import Filter from './filter/Filter';
+import ContactList from './contactList/ContactList';
+import { Card } from 'react-bootstrap';
+
+const CONTACT_KEY = 'contacts';
+
+const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    const storedContacts = localStorage.getItem(CONTACT_KEY);
+
+    if (storedContacts) {
+      setContacts(JSON.parse(storedContacts));
+    }
+  }, []);
+
+  const addContact = contact => {
+    const newContact = { id: nanoid(), ...contact };
+    setContacts(prevContacts => [...prevContacts, newContact]);
+    updateLocalStorage();
+  };
+
+  const onDeleteContact = id => {
+    const updatedContacts = contacts.filter(contact => contact.id !== id);
+    setContacts(updatedContacts);
+    updateLocalStorage();
+  };
+
+  const handleFilterChange = e => {
+    setFilter(e.target.value);
+  };
+
+  const updateLocalStorage = () => {
+    localStorage.setItem(CONTACT_KEY, JSON.stringify(contacts));
+  };
+
   return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
+    <Card className="background">
+      <h1>Phonebook</h1>
+      <ContactForm contacts={contacts} addContact={addContact} />
+      <Filter filter={filter} handleFilterChange={handleFilterChange} />
+      <ContactList
+        contacts={contacts}
+        filter={filter}
+        onDeleteContact={onDeleteContact}
+      />
+    </Card>
   );
 };
+
+export default App;
